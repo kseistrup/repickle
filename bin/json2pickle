@@ -71,7 +71,11 @@ def json2pickle(config):
         die('Use ‘--force’ if you really wish to write binary data to a TTY.')
     try:
         with open('/dev/stdout', 'wb') as stdout:
-            pickle.dump(json.load(sys.stdin), stdout)
+            pickle.dump(
+                json.load(sys.stdin),
+                stdout,
+                protocol=-1  # use highest version available
+            )
     except IOError as err:
         die(str(err))
 

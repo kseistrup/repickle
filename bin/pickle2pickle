@@ -71,7 +71,11 @@ def pickle2pickle(config):
     try:
         with open('/dev/stdin', 'rb') as stdin:
             with open('/dev/stdout', 'wb') as stdout:
-                pickle.dump(pickle.load(stdin), stdout)
+                pickle.dump(
+                    pickle.load(stdin),
+                    stdout,
+                    protocol=-1  # use highest version available
+                )
     except IOError as err:
         die(str(err))
 
