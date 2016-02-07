@@ -7,4 +7,5 @@ the output.
 * Marshal
 * MessagePack
 * Pickle
+* TOML
 * YAML
