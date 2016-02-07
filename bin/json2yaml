@@ -1,0 +1,3 @@
+#!/bin/sh
+json2msgpack | msgpack2yaml
+# eof

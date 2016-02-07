@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+# -*- mode: python; coding: utf-8 -*-
+"""
+Usage: yaml2umsgpack [OPTIONS]
+  options are:
+    -h, --help ........ show this help text and exit
+    -v, --version ..... print version information and exit
+    -c, --copyright ... show copying policy and exit
+"""
+##############################################################################
+# This program is free software; you can redistribute it and/or modify it    #
+# under the terms of the GNU General Public License as published by the Free #
+# Software Foundation; either version 3 of the License, or (at your option)  #
+# any later version.                                                         #
+#                                                                            #
+# This program is distributed in the hope that it will be useful, but with-  #
+# out any warranty; without even the implied warranty of merchantability or  #
+# fitness for a particular purpose.  See the GNU General Public License for  #
+# more details.  <http://gplv3.fsf.org/>                                     #
+##############################################################################
+
+# http://python-future.org/quickstart.html#quickstart-guide
+#from __future__ import (absolute_import, division, print_function,
+#                        unicode_literals)
+#from future.builtins import *
+
+__author__ = 'Klaus Alexander Seistrup <kas+xxx2yyy@magnetic-ink.dk>'
+__revision__ = '2014-02-13'
+__version__ = '0.0.1 (%s)' % __revision__
+__copyright__ = """\
+yaml2umsgpack %s
+Copyright © 2014 Klaus Alexander Seistrup <klaus@seistrup.dk>
+
+This is free software; see the source for copying conditions.  There is no
+warranty; not even for merchantability or fitness for a particular purpose.\
+""" % (__version__,)
+
+import sys
+import os
+import argparse
+
+from sys import (stdin, stdout, stderr, exit)
+
+try:
+    from locale import (setlocale, LC_ALL)
+    dummy = setlocale(LC_ALL, '')
+except:
+    pass
+# end try
+
+try:
+    import yaml
+except ImportError as err:
+    print(str(err), file=stderr)
+    sys.exit(1)
+# end try
+
+try:
+    import umsgpack
+except ImportError as e:
+    print(str(e), file=stderr)
+    exit(1)
+# end try
+
+def main(ac, av):
+    me = av[0]
+
+    parser = argparse.ArgumentParser(
+        prog='yaml2umsgpack'
+    )
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s/' + __version__,
+                        help='print version information and exit')
+
+    args = parser.parse_args()
+
+    try:
+        with open('/dev/stdout', 'wb') as fp:
+            fp.write(
+                umsgpack.dumps(
+                    yaml.load(stdin)
+                )
+            )
+            fp.flush()
+        rc = 0
+    except Exception as e:
+        print(str(e).strip(), file=stderr)
+        rc = 1
+    # end try
+
+    return rc
+# end def main
+
+if __name__ == '__main__':
+    sys.argv[0] = os.path.basename(sys.argv[0])
+    exit(main(len(sys.argv), sys.argv))
+# end if
+
+# eof
