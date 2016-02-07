@@ -71,7 +71,7 @@ def die(message=None):
 
 
 def msgpack2pickle(config):
-    """Convert msgpack to pickle"""
+    """Convert MessagePack to pickle"""
     if sys.stdout.isatty() and not config.force:
         die('Use ‘--force’ if you really wish to write binary data to a TTY.')
     try:
