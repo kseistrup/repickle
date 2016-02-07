@@ -3,14 +3,6 @@
 """
 Usage: pickle2pickle [OPTIONS]
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -v, --version         show version information and exit
-  -c, --copyright       show copying policy and exit
-  -i INDENT, --indent INDENT
-                        set indentation to INDENT
-  -S, --no-sort         do not sort keys
-  -f, --force           write to stdout even if data is binary
 """
 ##############################################################################
 # This program is free software; you can redistribute it and/or modify it    #
@@ -74,7 +66,7 @@ def pickle2pickle(config):
     try:
         with open('/dev/stdin', 'rb') as stdin:
             with open('/dev/stdout', 'wb') as stdout:
-                pass
+                pickle.dump(pickle.load(stdin), stdout)
     except IOError as err:
         die(str(err))
 
@@ -92,18 +84,12 @@ def main(progname='pickle2pickle'):
     parser.add_argument('-c', '--copyright', action='version',
                         version=__copyright__,
                         help='show copying policy and exit')
-    parser.add_argument('-i', '--indent', type=int,
-                        help='set indentation to INDENT')
-    parser.add_argument('-S', '--no-sort', action='store_true',
-                        help='do not sort keys')
     parser.add_argument('-f', '--force', action='store_true',
                         help='write to standard output even if data is binary')
 
     args = parser.parse_args()
-    config = Config()
 
-    config.force = args.force
-    config.indent = args.indent
+    config = Config()
     config.sort = not args.no_sort
 
     pickle2pickle(config)
