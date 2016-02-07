@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # -*- mode: sh; coding: utf-8 -*-
 ##############################################################################
 # This program is free software; you can redistribute it and/or modify it    #
@@ -61,6 +61,6 @@ case "${1}" in
   ;;
 esac
 
-exec msgpack2pickle > >(exec pickle2msgpack "${@}")
+msgpack2pickle | pickle2msgpack "${@}"
 
 # eof
