@@ -4,13 +4,10 @@
 Usage: yaml2pickle [OPTIONS]
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -v, --version         show version information and exit
-  -c, --copyright       show copying policy and exit
-  -i INDENT, --indent INDENT
-                        set indentation to INDENT
-  -S, --no-sort         do not sort keys
-  -f, --force           write to stdout even if data is binary
+  -h, --help       show this help message and exit
+  -v, --version    show version information and exit
+  -c, --copyright  show copying policy and exit
+  -f, --force      write to stdout even if data is binary
 """
 ##############################################################################
 # This program is free software; you can redistribute it and/or modify it    #
@@ -36,6 +33,12 @@ try:
     _ = setlocale(LC_ALL, '')
 except (ImportError, NameError, Error):
     pass
+
+try:
+    import yaml
+except ImportError as error:
+    print('This script requires the yaml module.', file=sys.stderr)
+    sys.exit(1)
 
 __author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
 __revision__ = '2016-02-07'
@@ -68,13 +71,12 @@ def die(message=None):
 
 
 def yaml2pickle(config):
-    """Convert yaml to pickle"""
+    """Convert YAML to pickle"""
     if sys.stdout.isatty() and not config.force:
         die('Use ‘--force’ if you really wish to write binary data to a TTY.')
     try:
-        with open('/dev/stdin', 'rb') as stdin:
-            with open('/dev/stdout', 'wb') as stdout:
-                pass
+        with open('/dev/stdout', 'wb') as stdout:
+            pickle.dump(yaml.load(sys.stdin), stdout)
     except IOError as err:
         die(str(err))
 
@@ -92,19 +94,13 @@ def main(progname='yaml2pickle'):
     parser.add_argument('-c', '--copyright', action='version',
                         version=__copyright__,
                         help='show copying policy and exit')
-    parser.add_argument('-i', '--indent', type=int,
-                        help='set indentation to INDENT')
-    parser.add_argument('-S', '--no-sort', action='store_true',
-                        help='do not sort keys')
     parser.add_argument('-f', '--force', action='store_true',
                         help='write to standard output even if data is binary')
 
     args = parser.parse_args()
-    config = Config()
 
+    config = Config()
     config.force = args.force
-    config.indent = args.indent
-    config.sort = not args.no_sort
 
     yaml2pickle(config)
 
