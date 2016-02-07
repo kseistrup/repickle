@@ -3,6 +3,11 @@
 """
 Usage: pickle2pickle [OPTIONS]
 
+optional arguments:
+  -h, --help       show this help message and exit
+  -v, --version    show version information and exit
+  -c, --copyright  show copying policy and exit
+  -f, --force      write to stdout even if data is binary
 """
 ##############################################################################
 # This program is free software; you can redistribute it and/or modify it    #
@@ -90,7 +95,7 @@ def main(progname='pickle2pickle'):
     args = parser.parse_args()
 
     config = Config()
-    config.sort = not args.no_sort
+    config.force = args.force
 
     pickle2pickle(config)
 
