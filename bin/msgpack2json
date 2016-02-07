@@ -1,12 +1,5 @@
-#!/usr/bin/env python
-# -*- mode: python; coding: utf-8 -*-
-"""
-Usage: umsgpack2json [OPTIONS]
-  options are:
-    -h, --help ........ show this help text and exit
-    -v, --version ..... print version information and exit
-    -c, --copyright ... show copying policy and exit
-"""
+#!/bin/bash
+# -*- mode: sh; coding: utf-8 -*-
 ##############################################################################
 # This program is free software; you can redistribute it and/or modify it    #
 # under the terms of the GNU General Public License as published by the Free #
@@ -18,89 +11,56 @@ Usage: umsgpack2json [OPTIONS]
 # fitness for a particular purpose.  See the GNU General Public License for  #
 # more details.  <http://gplv3.fsf.org/>                                     #
 ##############################################################################
+ME="${0##*/}"
 
-# http://python-future.org/quickstart.html#quickstart-guide
-#from __future__ import (absolute_import, division, print_function,
-#                        unicode_literals)
-#from future.builtins import *
-
-__author__ = 'Klaus Alexander Seistrup <kas+xxx2yyy@magnetic-ink.dk>'
-__revision__ = '2014-02-13'
-__version__ = '0.0.1 (%s)' % __revision__
-__copyright__ = """\
-umsgpack2json %s
-Copyright © 2014 Klaus Alexander Seistrup <klaus@seistrup.dk>
+AUTHOR='Klaus Alexander Seistrup <klaus@seistrup.dk>'
+REVISION='2016-02-07'
+VERSION="0.1.0 (${REVISION})"
+COPYRIGHT="\
+msgpack2json ${VERSION}
+Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
 
 This is free software; see the source for copying conditions.  There is no
 warranty; not even for merchantability or fitness for a particular purpose.\
-""" % (__version__,)
+"
 
-import sys
-import os
-import argparse
-import json
+my_copyright () {
+  echo "${COPYRIGHT}"
+}
 
-from sys import (stdin, stdout, stderr, exit)
+my_help () {
+  cat << __EOT__
+Usage: ${ME} [OPTIONS]
 
-try:
-    from locale import (setlocale, LC_ALL)
-    dummy = setlocale(LC_ALL, '')
-except:
-    pass
-# end try
+optional arguments:
+  -h, --help         show this help message and exit
+  -v, --version      show version information and exit
+  -c, --copyright    show copying policy and exit
+__EOT__
+}
 
-try:
-    import umsgpack
-except ImportError as e:
-    print(str(e), file=stderr)
-    exit(1)
-# end try
+my_version () {
+  echo "msgpack2json/${VERSION}"
+}
 
-def main(ac, av):
-    me = av[0]
+case "${1}" in
+  -c | --copyright )
+    my_copyright
+    exit 0
+  ;;
+  -h | --help )
+    my_help
+    exit 0
+  ;;
+  -v | --version )
+    my_version
+    exit 0
+  ;;
+  * )
+    : pass
+  ;;
+esac
 
-    parser = argparse.ArgumentParser(
-        prog='umsgpack2json'
-    )
-    parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s/' + __version__,
-                        help='print version information and exit')
-
-    args = parser.parse_args()
-
-    try:
-        with open('/dev/stdin', 'rb') as fp:
-            buf = fp.read()
-            py = json.dumps(
-                umsgpack.loads(buf),
-                ensure_ascii=False,
-                indent=2,
-                sort_keys=True
-            )
-        if stdout.isatty():
-            from pygments import highlight
-            from pygments.lexers import JsonLexer
-            from pygments.formatters import TerminalFormatter
-            highlight(
-                py,
-                JsonLexer(),
-                TerminalFormatter(style='native'),
-                outfile=stdout
-            )
-        else:
-            print(py)
-        rc = 0
-    except Exception as e:
-        print(str(e).strip(), file=stderr)
-        rc = 1
-    # end try
-
-    return rc
-# end def main
-
-if __name__ == '__main__':
-    sys.argv[0] = os.path.basename(sys.argv[0])
-    exit(main(len(sys.argv), sys.argv))
-# end if
+exec msgpack2pickle > >(exec pickle2json "${@}")
 
 # eof
