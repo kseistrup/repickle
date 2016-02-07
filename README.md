@@ -4,7 +4,7 @@ the output.
 
 ## Supported formats
 * JSON
-* marshal
+* Marshal
 * MessagePack
-* pickle
+* Pickle
 * YAML
