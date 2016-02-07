@@ -17,7 +17,7 @@ AUTHOR='Klaus Alexander Seistrup <klaus@seistrup.dk>'
 REVISION='2016-02-07'
 VERSION="0.1.0 (${REVISION})"
 COPYRIGHT="\
-json2yaml ${VERSION}
+marshal2marshal ${VERSION}
 Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
 
 This is free software; see the source for copying conditions.  There is no
@@ -40,7 +40,7 @@ __EOT__
 }
 
 my_version () {
-  echo "json2yaml/${VERSION}"
+  echo "marshal2marshal/${VERSION}"
 }
 
 case "${1}" in
@@ -61,6 +61,6 @@ case "${1}" in
   ;;
 esac
 
-exec json2pickle > >(exec pickle2yaml "${@}")
+exec marshal2pickle > >(exec pickle2marshal "${@}")
 
 # eof
