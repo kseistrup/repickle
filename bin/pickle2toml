@@ -71,7 +71,7 @@ def die(message=None):
 
 
 def pickle2toml(config):
-    """Convert pickle to toml"""
+    """Convert pickle to TOML"""
     try:
         with open('/dev/stdin', 'rb') as stdin:
             sys.stdout.write(

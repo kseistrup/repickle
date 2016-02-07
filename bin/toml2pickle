@@ -71,7 +71,7 @@ def die(message=None):
 
 
 def toml2pickle(config):
-    """Convert toml to pickle"""
+    """Convert TOML to pickle"""
     if sys.stdout.isatty() and not config.force:
         die('Use ‘--force’ if you really wish to write binary data to a TTY.')
     try:
