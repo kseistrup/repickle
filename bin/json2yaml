@@ -17,7 +17,7 @@ REVISION='2016-02-07'
 VERSION="0.1.0 (${REVISION})"
 COPYRIGHT="\
 json2yaml ${VERSION}
-Copyright © 2016 Klaus Alexander Seistrup <klaus@seistrup.dk>
+Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
 
 This is free software; see the source for copying conditions.  There is no
 warranty; not even for merchantability or fitness for a particular purpose.\
