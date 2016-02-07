@@ -1,0 +1,116 @@
+#!/usr/bin/python3
+# -*- mode: python; coding: utf-8 -*-
+"""
+Usage: pickle2marshal [OPTIONS]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show version information and exit
+  -c, --copyright       show copying policy and exit
+  -i INDENT, --indent INDENT
+                        set indentation to INDENT
+  -S, --no-sort         do not sort keys
+  -f, --force           write to stdout even if data is binary
+"""
+##############################################################################
+# This program is free software; you can redistribute it and/or modify it    #
+# under the terms of the GNU General Public License as published by the Free #
+# Software Foundation; either version 3 of the License, or (at your option)  #
+# any later version.                                                         #
+#                                                                            #
+# This program is distributed in the hope that it will be useful, but with-  #
+# out any warranty; without even the implied warranty of merchantability or  #
+# fitness for a particular purpose.  See the GNU General Public License for  #
+# more details.  <http://gplv3.fsf.org/>                                     #
+##############################################################################
+
+import sys
+import os
+import pathlib
+import logging
+import argparse
+import pickle
+
+try:
+    from locale import (Error, setlocale, LC_ALL)
+    _ = setlocale(LC_ALL, '')
+except (ImportError, NameError, Error):
+    pass
+
+__author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
+__revision__ = '2016-02-07'
+__version__ = '0.1.0 ({})'.format(__revision__)
+__copyright__ = """\
+pickle2marshal {}
+Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
+
+This is free software; see the source for copying conditions.  There is no
+warranty; not even for merchantability or fitness for a particular purpose.\
+""".format(__version__)
+
+DEBUG = os.environ.get('DEBUG', 'False')[0].upper() in '1JTY'  # 1/Ja/True/Yes
+MYLOG = logging.getLogger('pickle2marshal')
+
+
+class Config(dict):
+    """Simple dot-dict implementation"""
+    def __getattr__(self, attr):
+        return self.get(attr, None)
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+
+def die(message=None):
+    """ Exit gracefully"""
+    if message:
+        MYLOG.error(message)
+    sys.exit(1 if message else 0)
+
+
+def pickle2marshal(config):
+    """Convert pickle to marshal"""
+    if sys.stdout.isatty() and not config.force:
+        die('Use ‘--force’ if you really wish to write binary data to a TTY.')
+    try:
+        with open('/dev/stdin', 'rb') as stdin:
+            with open('/dev/stdout', 'wb') as stdout:
+                pass
+    except IOError as err:
+        die(str(err))
+
+
+def main(progname='pickle2marshal'):
+    """Main entry point"""
+
+    parser = argparse.ArgumentParser(
+        prog=progname,
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s/{}'.format(__version__),
+                        help='show version information and exit')
+    parser.add_argument('-c', '--copyright', action='version',
+                        version=__copyright__,
+                        help='show copying policy and exit')
+    parser.add_argument('-i', '--indent', type=int,
+                        help='set indentation to INDENT')
+    parser.add_argument('-S', '--no-sort', action='store_true',
+                        help='do not sort keys')
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='write to standard output even if data is binary')
+
+    args = parser.parse_args()
+    config = Config()
+
+    config.force = args.force
+    config.indent = args.indent
+    config.sort = not args.no_sort
+
+    pickle2marshal(config)
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(pathlib.Path(sys.argv[0]).name))
+
+# eof
