@@ -1,66 +1,8 @@
 #!/bin/sh
 # -*- mode: sh; coding: utf-8 -*-
-##############################################################################
-# This program is free software; you can redistribute it and/or modify it    #
-# under the terms of the GNU General Public License as published by the Free #
-# Software Foundation; either version 3 of the License, or (at your option)  #
-# any later version.                                                         #
-#                                                                            #
-# This program is distributed in the hope that it will be useful, but with-  #
-# out any warranty; without even the implied warranty of merchantability or  #
-# fitness for a particular purpose.  See the GNU General Public License for  #
-# more details.  <http://gplv3.fsf.org/>                                     #
-##############################################################################
-ME="${0##*/}"
-
-AUTHOR='Klaus Alexander Seistrup <klaus@seistrup.dk>'
-REVISION='2016-02-07'
-VERSION="0.1.0 (${REVISION})"
-COPYRIGHT="\
-toml2marshal ${VERSION}
-Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
-
-This is free software; see the source for copying conditions.  There is no
-warranty; not even for merchantability or fitness for a particular purpose.\
-"
-
-my_copyright () {
-  echo "${COPYRIGHT}"
-}
-
-my_help () {
-  cat << __EOT__
-Usage: ${ME} [OPTIONS]
-
-optional arguments:
-  -h, --help         show this help message and exit
-  -v, --version      show version information and exit
-  -c, --copyright    show copying policy and exit
-__EOT__
-}
-
-my_version () {
-  echo "toml2marshal/${VERSION}"
-}
-
-case "${1}" in
-  -c | --copyright )
-    my_copyright
-    exit 0
-  ;;
-  -h | --help )
-    my_help
-    exit 0
-  ;;
-  -v | --version )
-    my_version
-    exit 0
-  ;;
-  * )
-    : pass
-  ;;
-esac
-
-toml2pickle | pickle2marshal "${@}"
-
+# Auto-generated on Monday, 2016-02-08 at 19:28 UTC.
+# This shell script is a part of the Repickle project:
+#  · https://github.com/kseistrup/repickle
+# q.v.
+exec repickle --input toml --output marshal "${@}"
 # eof
