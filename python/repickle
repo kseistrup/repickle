@@ -1,0 +1,344 @@
+#!/usr/bin/python
+# -*- mode: python; coding: utf-8 -*-
+"""
+Usage: repickle [OPTIONS]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show version information and exit
+  -C, --copyright       show copying policy and exit
+  -i INPUT, --input INPUT
+                        input format (default: json)
+  -o OUTPUT, --output OUTPUT
+                        output format (default: json)
+  -c {auto,always,never}, --color {auto,always,never}
+                        colorize output (default: auto)
+  -n INDENT, --indent INDENT
+                        set indentation to INDENT spaces
+  -S, --no-sort         do not sort keys (default: sort)
+  -f, --force           write to TTY even if data is binary
+"""
+##############################################################################
+# This program is free software; you can redistribute it and/or modify it    #
+# under the terms of the GNU General Public License as published by the Free #
+# Software Foundation; either version 3 of the License, or (at your option)  #
+# any later version.                                                         #
+#                                                                            #
+# This program is distributed in the hope that it will be useful, but with-  #
+# out any warranty; without even the implied warranty of merchantability or  #
+# fitness for a particular purpose.  See the GNU General Public License for  #
+# more details.  <http://gplv3.fsf.org/>                                     #
+##############################################################################
+
+import sys
+import os
+import pathlib
+import argparse
+import marshal
+import pickle
+import json
+import pprint
+
+try:
+    # Put CHOICES here so that pylint doesn't complain
+    CHOICES = ['marshal', 'pickle', 'json']
+    from locale import (Error, setlocale, LC_ALL)
+    _ = setlocale(LC_ALL, '')
+except (ImportError, NameError, Error):
+    pass
+
+try:
+    import yaml
+    CHOICES.append('yaml')
+except ImportError:
+    pass
+
+try:
+    import pytoml
+    CHOICES.append('toml')
+except ImportError:
+    pass
+
+try:
+    import umsgpack
+    CHOICES.append('msgpack')
+except ImportError:
+    pass
+
+__author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
+__revision__ = '2016-02-08'
+__version__ = '0.2.1 ({})'.format(__revision__)
+__copyright__ = """\
+repickle {}
+Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
+
+This is free software; see the source for copying conditions.  There is no
+warranty; not even for merchantability or fitness for a particular purpose.\
+""".format(__version__)
+
+EPILOG = """\
+Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium
+doloremque laudantium, totam rem aperiam eaque ipsa, quae ab illo inventore
+veritatis et quasi architecto beatae vitae dicta sunt, explicabo. Nemo enim
+ipsam voluptatem, quia voluptas sit, aspernatur aut odit aut fugit, sed quia
+consequuntur magni dolores eos, qui ratione voluptatem sequi nesciunt, neque
+porro quisquam est, qui dolorem ipsum, quia dolor sit, amet, consectetur,
+adipisci velit, sed quia non numquam eius modi tempora incidunt, ut labore
+et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis
+nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid
+ex ea commodi consequatur? Quis autem vel eum iure reprehenderit, qui in ea
+voluptate velit esse, quam nihil molestiae consequatur, vel illum, qui
+dolorem eum fugiat, quo voluptas nulla pariatur?\
+"""
+
+DEBUG = os.environ.get('DEBUG', 'False')[0].upper() in '1JTY'  # 1/Ja/True/Yes
+BINARY = {'marshal', 'pickle', 'msgpack'}
+
+
+class Config(dict):
+    """Simple dot-dict implementation"""
+    def __getattr__(self, attr):
+        return self.get(attr, None)
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+
+def die(message=None):
+    """Exit gracefully"""
+    if message:
+        print(message, file=sys.stderr)
+    sys.exit(1 if message else 0)
+
+
+def debug(title, data):
+    """Possibly print a debug message to standard error stream"""
+    if DEBUG:
+        pprint.pprint({title: data}, stream=sys.stderr)
+
+
+def isbinary(fname):
+    """Is format binary?"""
+    return fname in BINARY
+
+
+def read_data(config):
+    """Read data from standard input, possibly in binary mode"""
+    binary = isbinary(config.input)
+    try:
+        with open('/dev/stdin', 'rb' if binary else 'r') as stdin:
+            if config.input == 'json':
+                data = json.load(stdin)
+            elif config.input == 'marshal':
+                data = marshal.load(stdin)
+            elif config.input == 'pickle':
+                data = pickle.load(stdin)
+            elif config.input == 'yaml':
+                data = yaml.load(stdin)
+            elif config.input == 'msgpack':
+                data = umsgpack.load(stdin)
+            elif config.input == 'toml':
+                data = pytoml.load(stdin)
+            else:
+                error = 'Unrecognized format: {}'.format(config.input)
+                raise LookupError(error)
+    except (NameError, IOError, OSError, PermissionError, LookupError) as err:
+        die(str(err))
+    debug('read', dict(format=config.input, binary=binary))
+    debug('data', data)
+    return data
+
+
+def highlight(config, pretty):
+    """Possibly colorize already pretty-printed data"""
+    if config.highlight and config.lexer:
+        try:
+            import pygments
+            from pygments.formatters import TerminalFormatter
+            pygments.highlight(
+                pretty,
+                config.lexer,
+                TerminalFormatter(style='native'),
+                outfile=sys.stdout
+            )
+        except ImportError:
+            print(pretty)
+    else:
+        print(pretty)
+
+
+def pretty_print_json(config, data):
+    """Reformat data as JSON"""
+    pretty = json.dumps(
+        data,
+        ensure_ascii=False,
+        indent=config.indent,
+        sort_keys=config.sort
+    )
+    highlight(config, pretty)
+
+
+def pretty_print_yaml(config, data):
+    """Reformat data as YAML"""
+    pretty = yaml.dump(
+        data,
+        stream=None,
+        default_flow_style=False,
+        canonical=False,
+        allow_unicode=True,
+        indent=config.indent,
+        explicit_start=True,
+        explicit_end=True,
+        version=(1, 2)
+    )
+    highlight(config, pretty)
+
+
+def pretty_print_toml(config, data):
+    """Reformat data as TOML"""
+    pretty = pytoml.dumps(
+        data,
+        sort_keys=config.sort
+    ).rstrip()
+    highlight(config, pretty)
+
+
+def pretty_print_python(config, data):
+    """Reformat data as Python"""
+    pretty = pprint.pformat(
+        data,
+        indent=config.indent
+    )
+    highlight(config, pretty)
+
+
+def write_data(config, data):
+    """Write data to standard output, possibly in colors"""
+    success = True
+    if isbinary(config.output):
+        try:
+            with open('/dev/stdout', 'wb') as stdout:
+                if config.output == 'marshal':
+                    marshal.dump(data, stdout)
+                elif config.output == 'pickle':
+                    pickle.dump(data, stdout, protocol=-1)
+                elif config.output == 'msgpack':
+                    umsgpack.dump(data, stdout)
+                else:
+                    success = False
+        except (NameError, IOError, OSError, PermissionError) as err:
+            die(str(err))
+    else:
+        if config.output == 'python':
+            pretty_print_python(config, data)
+        elif config.output == 'json':
+            pretty_print_json(config, data)
+        elif config.output == 'yaml':
+            pretty_print_yaml(config, data)
+        elif config.output == 'toml':
+            pretty_print_toml(config, data)
+        else:
+            success = False
+    if not success:
+        die('Unrecognized format: {}'.format(config.output))
+    debug('write', dict(format=config.output, success=success))
+
+
+def get_lexer(config):
+    """Find an appropriate lexer for a given output format"""
+    try:
+        from pygments import lexers
+        if config.output == 'json':
+            lexer = lexers.find_lexer_class('JSON')
+        elif config.output == 'yaml':
+            lexer = lexers.find_lexer_class('YAML')
+        elif config.output == 'toml':
+            lexer = lexers.find_lexer_class('TOML')
+            if not lexer:
+                lexer = lexers.find_lexer_class('INI')
+        elif config.output == 'python':
+            lexer = lexers.find_lexer_class('Python 3')
+            if not lexer:
+                lexer = lexers.find_lexer_class('Python')
+        else:
+            lexer = lexers.find_lexer_class('Text only')
+    except ImportError:
+        lexer = None
+
+    debug('lexer', lexer)
+
+    return lexer()
+
+
+def repickle(config):
+    """Central workflow"""
+    data = read_data(config)
+    write_data(config, data)
+
+
+def main(progname='repickle'):
+    """Main entry point"""
+
+    debug('argv', sys.argv)
+
+    parser = argparse.ArgumentParser(
+        prog=progname,
+        epilog=EPILOG,
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s/{}'.format(__version__),
+                        help='show version information and exit')
+    parser.add_argument('-C', '--copyright', action='version',
+                        version=__copyright__,
+                        help='show copying policy and exit')
+
+    parser.add_argument('-i', '--input', choices=sorted(CHOICES),
+                        default='json', help='input format (default: json)')
+    parser.add_argument('-o', '--output', choices=sorted(CHOICES + ['python']),
+                        default='json', help='output format (default: json)')
+    parser.add_argument('-c', '--color', choices=('auto', 'always', 'never'),
+                        default='auto', help='colorize output (default: auto)')
+    parser.add_argument('-n', '--indent', type=int, default=-1,
+                        help='set indentation to INDENT spaces')
+    parser.add_argument('-S', '--no-sort', action='store_true',
+                        help='do not sort keys (default: sort)')
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='write to TTY even if data is binary')
+
+    args = parser.parse_args()
+    debug('args', args)
+
+    config = Config()
+
+    config.input = args.input
+    config.output = args.output
+    config.force = args.force
+    config.sort = not args.no_sort
+
+    if args.indent < 0:
+        config.indent = 1 if args.output == 'python' else 2
+    else:
+        config.indent = args.indent
+
+    if isbinary(config.output) or config.color in {'never'}:
+        config.highlight = False
+    elif config.color in {'always'}:
+        config.highlight = True
+    else:
+        config.highlight = sys.stdout.isatty()  # ‘auto’
+
+    config.lexer = get_lexer(config) if config.highlight else None
+
+    debug('config', config)
+
+    if isbinary(config.output) and sys.stdout.isatty() and not config.force:
+        die('Please use ‘--force’ if you wish to write binary data to a TTY.')
+
+    repickle(config)
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(pathlib.Path(sys.argv[0]).name))
+
+# eof
