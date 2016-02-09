@@ -120,7 +120,7 @@ def die(message=None):
             message = message.split(']', 1)[1]
         # Collapse multiple whitespace
         message = ' '.join(message.split())
-        # How come there is no ispunctuation() method for strings? 
+        # How come there is no ispunctuation() method for strings?
         if message[-1] not in '.?!':
             message += '.'
         if "'utf-8'" in message:
@@ -156,10 +156,9 @@ def read_data(config):
             elif config.input == 'yaml':
                 try:
                     data = yaml.load(stdin)
-                except (
-                    yaml.parser.ParserError,
-                    yaml.reader.ReaderError
-                ) as error:
+                except (yaml.parser.ParserError,
+                        yaml.reader.ReaderError
+                       ) as error:
                     die(str(error))
                 except Exception:
                     raise
@@ -190,16 +189,15 @@ def read_data(config):
         die('Cannot unpickle data.')
     except StopIteration:
         pass
-    except (
-        EOFError,
-        IOError,
-        LookupError,
-        NameError,
-        OSError,
-        PermissionError,
-        UnicodeDecodeError,
-        ValueError
-    ) as error:
+    except (EOFError,
+            IOError,
+            LookupError,
+            NameError,
+            OSError,
+            PermissionError,
+            UnicodeDecodeError,
+            ValueError
+           ) as error:
         die(str(error))
     debug('read', dict(format=config.input, binary=binary))
     debug('data', data)
@@ -294,12 +292,11 @@ def write_data(config, data):
                     umsgpack.dump(data, stdout)
                 else:
                     success = False
-        except (
-            IOError,
-            NameError,
-            OSError,
-            PermissionError
-        ) as error:
+        except (IOError,
+                NameError,
+                OSError,
+                PermissionError
+               ) as error:
             die(str(error))
     else:
         try:
@@ -317,10 +314,9 @@ def write_data(config, data):
                 success = False
             if not success:
                 die('Unrecognized format: {}'.format(config.output))
-        except (
-            TypeError,
-            ValueError
-        ) as error:
+        except (TypeError,
+                ValueError
+               ) as error:
             die(str(error))
     debug('write', dict(format=config.output, success=success))
 
