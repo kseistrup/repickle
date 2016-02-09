@@ -112,8 +112,10 @@ class Config(dict):
 def die(message=None):
     """Exit gracefully"""
     if message:
+        message = ' '.join(message.split())
+        message = message[0].upper() + message[1:]
         if message.startswith('[Errno') and message.count(']') > 0:
-            message = message.split(']', 1)[1].strip()
+            message = message.split(']', 1)[1]
         if message[-1] not in ('.!?'):
             message += '.'
         print(message, file=sys.stderr)
@@ -143,7 +145,12 @@ def read_data(config):
             elif config.input == 'pickle':
                 data = pickle.load(stdin)
             elif config.input == 'yaml':
-                data = yaml.load(stdin)
+                try:
+                    data = yaml.load(stdin)
+                except yaml.reader.ReaderError as error:
+                    die(str(error))
+                except Exception:
+                    raise
             elif config.input == 'msgpack':
                 try:
                     data = umsgpack.load(stdin)
@@ -157,6 +164,8 @@ def read_data(config):
             else:
                 error = 'Unrecognized format: {}'.format(config.input)
                 raise LookupError(error)
+    except pickle.UnpicklingError:
+        die('Cannot unpickle data.')
     except StopIteration:
         pass
     except (
