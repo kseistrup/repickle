@@ -3,6 +3,7 @@ Convert between Python serialization formats, possibly pretty printing
 the output.
 
 ## Supported formats
+* AXON
 * JSON
 * Marshal
 * MessagePack
