@@ -294,23 +294,34 @@ def write_data(config, data):
                     umsgpack.dump(data, stdout)
                 else:
                     success = False
-        except (NameError, IOError, OSError, PermissionError) as err:
-            die(str(err))
+        except (
+            IOError,
+            NameError,
+            OSError,
+            PermissionError
+        ) as error:
+            die(str(error))
     else:
-        if config.output == 'python':
-            pretty_print_python(config, data)
-        elif config.output == 'json':
-            pretty_print_json(config, data)
-        elif config.output == 'yaml':
-            pretty_print_yaml(config, data)
-        elif config.output == 'toml':
-            pretty_print_toml(config, data)
-        elif config.output == 'axon':
-            pretty_print_axon(config, data)
-        else:
-            success = False
-        if not success:
-            die('Unrecognized format: {}'.format(config.output))
+        try:
+            if config.output == 'python':
+                pretty_print_python(config, data)
+            elif config.output == 'json':
+                pretty_print_json(config, data)
+            elif config.output == 'yaml':
+                pretty_print_yaml(config, data)
+            elif config.output == 'toml':
+                pretty_print_toml(config, data)
+            elif config.output == 'axon':
+                pretty_print_axon(config, data)
+            else:
+                success = False
+            if not success:
+                die('Unrecognized format: {}'.format(config.output))
+        except (
+            TypeError,
+            ValueError
+        ) as error:
+            die(str(error))
     debug('write', dict(format=config.output, success=success))
 
 
