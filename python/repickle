@@ -73,7 +73,7 @@ except ImportError:
 
 __author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
 __revision__ = '2016-02-09'
-__version__ = '0.3.0 ({})'.format(__revision__)
+__version__ = '0.3.1 ({})'.format(__revision__)
 __copyright__ = """\
 repickle {}
 Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
@@ -112,6 +112,10 @@ class Config(dict):
 def die(message=None):
     """Exit gracefully"""
     if message:
+        if message.startswith('[Errno') and message.count(']') > 0:
+            message = message.split(']', 1)[1].strip()
+        if message[-1] not in ('.!?'):
+            message += '.'
         print(message, file=sys.stderr)
     sys.exit(1 if message else 0)
 
@@ -141,7 +145,10 @@ def read_data(config):
             elif config.input == 'yaml':
                 data = yaml.load(stdin)
             elif config.input == 'msgpack':
-                data = umsgpack.load(stdin)
+                try:
+                    data = umsgpack.load(stdin)
+                except umsgpack.InsufficientDataException:
+                    die('Insufficient data.')
             elif config.input == 'toml':
                 data = pytoml.load(stdin)
             elif config.input == 'axon':
@@ -150,8 +157,19 @@ def read_data(config):
             else:
                 error = 'Unrecognized format: {}'.format(config.input)
                 raise LookupError(error)
-    except (NameError, IOError, OSError, PermissionError, LookupError) as err:
-        die(str(err))
+    except StopIteration:
+        pass
+    except (
+        EOFError,
+        IOError,
+        LookupError,
+        NameError,
+        OSError,
+        PermissionError,
+        UnicodeDecodeError,
+        ValueError
+    ) as error:
+        die(str(error))
     debug('read', dict(format=config.input, binary=binary))
     debug('data', data)
     return data
@@ -213,12 +231,13 @@ def pretty_print_toml(config, data):
 
 def pretty_print_axon(config, data):
     """Reformat data as AXON"""
-    pretty = axon.dumps(
-        data,
-        pretty=True,
-        sorted=config.sort
-    )
-    highlight(config, pretty)
+    if data:
+        pretty = axon.dumps(
+            data,
+            pretty=True,
+            sorted=config.sort
+        )
+        highlight(config, pretty)
 
 
 def pretty_print_python(config, data):
@@ -259,8 +278,8 @@ def write_data(config, data):
             pretty_print_axon(config, data)
         else:
             success = False
-    if not success:
-        die('Unrecognized format: {}'.format(config.output))
+        if not success:
+            die('Unrecognized format: {}'.format(config.output))
     debug('write', dict(format=config.output, success=success))
 
 
