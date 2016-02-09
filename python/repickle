@@ -73,7 +73,7 @@ except ImportError:
 
 __author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
 __revision__ = '2016-02-09'
-__version__ = '0.3.1 ({})'.format(__revision__)
+__version__ = '0.3.1.1 ({})'.format(__revision__)
 __copyright__ = """\
 repickle {}
 Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
@@ -112,12 +112,21 @@ class Config(dict):
 def die(message=None):
     """Exit gracefully"""
     if message:
-        message = ' '.join(message.split())
-        message = message[0].upper() + message[1:]
+        # AXON
+        if message.startswith('ERROR::'):
+            message = message[7:]
+        # OSError et al.
         if message.startswith('[Errno') and message.count(']') > 0:
             message = message.split(']', 1)[1]
-        if message[-1] not in ('.!?'):
+        # Collapse multiple whitespace
+        message = ' '.join(message.split())
+        # How come there is no ispunctuation() method for strings? 
+        if message[-1] not in '.?!':
             message += '.'
+        if "'utf-8'" in message:
+            message = message.replace("'utf-8'", 'UTF-8')
+        # Because .capitalize() does the wrong thing
+        message = message[0].upper() + message[1:]
         print(message, file=sys.stderr)
     sys.exit(1 if message else 0)
 
@@ -147,7 +156,10 @@ def read_data(config):
             elif config.input == 'yaml':
                 try:
                     data = yaml.load(stdin)
-                except yaml.reader.ReaderError as error:
+                except (
+                    yaml.parser.ParserError,
+                    yaml.reader.ReaderError
+                ) as error:
                     die(str(error))
                 except Exception:
                     raise
@@ -157,10 +169,20 @@ def read_data(config):
                 except umsgpack.InsufficientDataException:
                     die('Insufficient data.')
             elif config.input == 'toml':
-                data = pytoml.load(stdin)
+                try:
+                    data = pytoml.load(stdin)
+                except pytoml.core.TomlError as error:
+                    die(str(error))
+                except Exception:
+                    raise
             elif config.input == 'axon':
-                # AXON returns an OrderedDict()
-                data = dict(axon.load(stdin))
+                try:
+                    # AXON returns an OrderedDict()
+                    data = dict(axon.load(stdin))
+                except axon.errors.AxonError as error:
+                    die(str(error))
+                except Exception:
+                    raise
             else:
                 error = 'Unrecognized format: {}'.format(config.input)
                 raise LookupError(error)
