@@ -65,9 +65,15 @@ try:
 except ImportError:
     pass
 
+try:
+    import axon
+    CHOICES.append('axon')
+except ImportError:
+    pass
+
 __author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
-__revision__ = '2016-02-08'
-__version__ = '0.2.1 ({})'.format(__revision__)
+__revision__ = '2016-02-09'
+__version__ = '0.3.0 ({})'.format(__revision__)
 __copyright__ = """\
 repickle {}
 Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
@@ -138,6 +144,9 @@ def read_data(config):
                 data = umsgpack.load(stdin)
             elif config.input == 'toml':
                 data = pytoml.load(stdin)
+            elif config.input == 'axon':
+                # AXON returns an OrderedDict()
+                data = dict(axon.load(stdin))
             else:
                 error = 'Unrecognized format: {}'.format(config.input)
                 raise LookupError(error)
@@ -156,7 +165,7 @@ def highlight(config, pretty):
             from pygments.formatters import TerminalFormatter
             pygments.highlight(
                 pretty,
-                config.lexer,
+                config.lexer(),
                 TerminalFormatter(style='native'),
                 outfile=sys.stdout
             )
@@ -202,6 +211,16 @@ def pretty_print_toml(config, data):
     highlight(config, pretty)
 
 
+def pretty_print_axon(config, data):
+    """Reformat data as AXON"""
+    pretty = axon.dumps(
+        data,
+        pretty=True,
+        sorted=config.sort
+    )
+    highlight(config, pretty)
+
+
 def pretty_print_python(config, data):
     """Reformat data as Python"""
     pretty = pprint.pformat(
@@ -236,6 +255,8 @@ def write_data(config, data):
             pretty_print_yaml(config, data)
         elif config.output == 'toml':
             pretty_print_toml(config, data)
+        elif config.output == 'axon':
+            pretty_print_axon(config, data)
         else:
             success = False
     if not success:
@@ -259,6 +280,8 @@ def get_lexer(config):
             lexer = lexers.find_lexer_class('Python 3')
             if not lexer:
                 lexer = lexers.find_lexer_class('Python')
+        elif config.output == 'axon':
+            lexer = lexers.find_lexer_class('AXON')
         else:
             lexer = lexers.find_lexer_class('Text only')
     except ImportError:
@@ -266,7 +289,7 @@ def get_lexer(config):
 
     debug('lexer', lexer)
 
-    return lexer()
+    return lexer
 
 
 def repickle(config):

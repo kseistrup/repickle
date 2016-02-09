@@ -1,5 +1,13 @@
 # Change log
 
+## [0.3.0] — 2016-02-09
+### Added
+- Now supports AXON
+
+## [0.2.1] — 2016-02-08
+### Changed
+- Total rewrite (combine all python scripts) 
+
 ## [0.1.0] — 2016-02-08
 ### Changed
 - First public release

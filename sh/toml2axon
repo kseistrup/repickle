@@ -1,8 +1,8 @@
 #!/bin/sh
 # -*- mode: sh; coding: utf-8 -*-
-# Auto-generated on Tuesday, 2016-02-09 at 04:23 UTC.
+# Auto-generated on Tuesday, 2016-02-09 at 04:24 UTC.
 # This shell script is a part of the Repickle project:
 #  · https://github.com/kseistrup/repickle
 # q.v.
-exec repickle --input toml --output python "${@}"
+exec repickle --input toml --output axon "${@}"
 # eof
