@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- mode: python; coding: utf-8 -*-
 """
 Usage: repickle [OPTIONS]
@@ -72,7 +72,7 @@ except ImportError:
     pass
 
 __author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
-__revision__ = '2016-02-09'
+__revision__ = '2017-04-01'
 __version__ = '0.3.1.1 ({})'.format(__revision__)
 __copyright__ = """\
 repickle {}
