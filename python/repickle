@@ -100,6 +100,8 @@ dolorem eum fugiat, quo voluptas nulla pariatur?\
 DEBUG = os.environ.get('DEBUG', 'False')[0].upper() in '1JTY'  # 1/Ja/True/Yes
 BINARY = {'marshal', 'pickle', 'msgpack'}
 
+(STDIN, STDOUT, STDERR) = (sys.stdin, sys.stdout, sys.stderr)
+
 
 class Config(dict):
     """Simple dot-dict implementation"""
@@ -127,14 +129,14 @@ def die(message=None):
             message = message.replace("'utf-8'", 'UTF-8')
         # Because .capitalize() does the wrong thing
         message = message[0].upper() + message[1:]
-        print(message, file=sys.stderr)
+        print(message, file=STDERR)
     sys.exit(1 if message else 0)
 
 
 def debug(title, data):
     """Possibly print a debug message to standard error stream"""
     if DEBUG:
-        pprint.pprint({title: data}, stream=sys.stderr)
+        pprint.pprint({title: data}, stream=STDERR)
 
 
 def isbinary(fname):
@@ -146,7 +148,7 @@ def read_data(config):
     """Read data from standard input, possibly in binary mode"""
     binary = isbinary(config.input)
     try:
-        with open('/dev/stdin', 'rb' if binary else 'r') as stdin:
+        with open(os.dup(STDIN.fileno()), 'rb' if binary else 'r') as stdin:
             if config.input == 'json':
                 data = json.load(stdin)
             elif config.input == 'marshal':
@@ -283,7 +285,7 @@ def write_data(config, data):
     success = True
     if isbinary(config.output):
         try:
-            with open('/dev/stdout', 'wb') as stdout:
+            with open(os.dup(STDOUT.fileno()), 'wb') as stdout:
                 if config.output == 'marshal':
                     marshal.dump(data, stdout)
                 elif config.output == 'pickle':
