@@ -37,6 +37,9 @@ import argparse
 import pickle
 import json
 import pprint
+
+from types import SimpleNamespace
+
 import marshal
 
 try:
@@ -101,14 +104,6 @@ DEBUG = os.environ.get('DEBUG', 'False')[0].upper() in '1JTY'  # 1/Ja/True/Yes
 BINARY = {'marshal', 'pickle', 'msgpack'}
 
 (STDIN, STDOUT, STDERR) = (sys.stdin, sys.stdout, sys.stderr)
-
-
-class Config(dict):
-    """Simple dot-dict implementation"""
-    def __getattr__(self, attr):
-        return self.get(attr, None)
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
 
 
 def die(message=None):
@@ -390,12 +385,12 @@ def main(progname='repickle'):
     args = parser.parse_args()
     debug('args', args)
 
-    config = Config()
-
-    config.input = args.input
-    config.output = args.output
-    config.force = args.force
-    config.sort = not args.no_sort
+    config = SimpleNamespace(
+        input=args.input,
+        output=args.output,
+        force=args.force,
+        sort=not args.no_sort,
+    )
 
     if args.indent < 0:
         config.indent = 1 if args.output == 'python' else 2
