@@ -44,36 +44,36 @@ try:
     CHOICES = ['marshal', 'pickle', 'json']
     from locale import (Error, setlocale, LC_ALL)
     _ = setlocale(LC_ALL, '')
-except (ImportError, NameError, Error):
+except (ImportError, ModuleNotFoundError, NameError, Error):
     pass
 
 try:
     import yaml
     CHOICES.append('yaml')
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pass
 
 try:
     import pytoml
     CHOICES.append('toml')
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pass
 
 try:
     import umsgpack
     CHOICES.append('msgpack')
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pass
 
 try:
     import axon
     CHOICES.append('axon')
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pass
 
 __author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
 __revision__ = '2017-04-01'
-__version__ = '0.3.1.1 ({})'.format(__revision__)
+__version__ = '0.3.1.2 ({})'.format(__revision__)
 __copyright__ = """\
 repickle {}
 Copyright © 2014-16 Klaus Alexander Seistrup <klaus@seistrup.dk>
@@ -216,7 +216,7 @@ def highlight(config, pretty):
                 TerminalFormatter(style='native'),
                 outfile=sys.stdout
             )
-        except ImportError:
+        except (ImportError, ModuleNotFoundError):
             print(pretty)
     else:
         print(pretty)
@@ -341,7 +341,7 @@ def get_lexer(config):
             lexer = lexers.find_lexer_class('AXON')
         else:
             lexer = lexers.find_lexer_class('Text only')
-    except ImportError:
+    except (ImportError, ModuleNotFoundError):
         lexer = None
 
     debug('lexer', lexer)
