@@ -160,7 +160,7 @@ def read_data(config):
                     data = yaml.load(stdin)
                 except (yaml.parser.ParserError,
                         yaml.reader.ReaderError
-                       ) as error:
+                        ) as error:
                     die(str(error))
                 except Exception:
                     raise
@@ -199,7 +199,7 @@ def read_data(config):
             PermissionError,
             UnicodeDecodeError,
             ValueError
-           ) as error:
+            ) as error:
         die(str(error))
     debug('read', dict(format=config.input, binary=binary))
     debug('data', data)
@@ -298,7 +298,7 @@ def write_data(config, data):
                 NameError,
                 OSError,
                 PermissionError
-               ) as error:
+                ) as error:
             die(str(error))
     else:
         try:
@@ -318,7 +318,7 @@ def write_data(config, data):
                 die('Unrecognized format: {}'.format(config.output))
         except (TypeError,
                 ValueError
-               ) as error:
+                ) as error:
             die(str(error))
     debug('write', dict(format=config.output, success=success))
 
@@ -419,6 +419,7 @@ def main(progname='repickle'):
     repickle(config)
 
     return 0
+
 
 if __name__ == '__main__':
     sys.exit(main(pathlib.Path(sys.argv[0]).name))
