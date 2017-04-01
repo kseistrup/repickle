@@ -311,9 +311,7 @@ def write_data(config, data):
                 success = False
             if not success:
                 die('Unrecognized format: {}'.format(config.output))
-        except (TypeError,
-                ValueError
-               ) as error:
+        except (TypeError, ValueError) as error:
             die(str(error))
     debug('write', dict(format=config.output, success=success))
 
